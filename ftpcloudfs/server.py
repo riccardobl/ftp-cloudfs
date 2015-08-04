@@ -18,17 +18,31 @@ class ObjectStorageFtpFS(ObjectStorageFS, AbstractedFS):
     keystone = None
     hide_part_dir = None
     snet = False
+    user_list = []
+    auth_mode = "direct"
 
     def __init__(self, username, api_key, authurl=None, keystone=None, hide_part_dir=None):
+        found="direct" in self.auth_mode
+        if "userlist" in self.auth_mode:
+            try:
+                for user in self.user_list:
+                    if username==user['ftp-username'] and api_key==user['ftp-password']:
+                        username=str(user['swift-tenant'])+'.'+str(user['swift-username'])
+                        api_key=str(user['swift-password'])
+                        found=True
+            except Exception:
+                pass
+
+
         ObjectStorageFS.__init__(self,
-                                 username,
+                                 username if found else "anonymous",
                                  api_key,
                                  authurl=authurl or self.authurl,
                                  keystone=keystone or self.keystone,
                                  hide_part_dir=hide_part_dir or self.hide_part_dir,
                                  snet = self.snet,
                                  insecure = self.insecure,
-                                 )
+        )
 
     def init_abstracted_fs(self, root, cmd_channel):
         AbstractedFS.__init__(self, root, cmd_channel)

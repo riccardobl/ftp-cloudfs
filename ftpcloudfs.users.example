@@ -1,0 +1,24 @@
+-   ftp-username: user1
+    ftp-password: password1
+    swift-tenant: 000000
+    swift-username: realuser@xxxx.yyy
+    swift-password: realpassword
+
+-   ftp-username: user1
+    ftp-password: password2
+    swift-tenant: 000000
+    swift-username: realuser@xxxx.yyy
+    swift-password: realpassword
+
+-   ftp-username: user2
+    ftp-password: password3
+    swift-tenant: 000000
+    swift-username: realuser@xxxx.yyy
+    swift-password: realpassword
+
+-   ftp-username: anonymous
+    ftp-password: anon@localhost
+    swift-tenant: 000000
+    swift-username: realuser@xxxx.yyy
+    swift-password: realpassword
+

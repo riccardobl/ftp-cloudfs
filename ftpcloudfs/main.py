@@ -2,6 +2,7 @@
 __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
 
 import sys
+import yaml
 import os
 import signal
 import socket
@@ -14,9 +15,7 @@ import pyftpdlib.servers
 
 from server import ObjectStorageFtpFS
 from fs import ObjectStorageFD
-from constants import version, default_address, default_port, \
-    default_config_file, default_banner, \
-    default_ks_tenant_separator, default_ks_service_type, default_ks_endpoint_type
+from constants import *
 from monkeypatching import MyFTPHandler
 from multiprocessing import Manager
 
@@ -39,6 +38,7 @@ def modify_supported_ftp_commands():
 
 class Main(object):
     """ftp-cloudfs: A FTP Proxy Interface to OpenStack Object Storage (Swift)."""
+    user_list=[]
 
     def __init__(self):
         self.options = None
@@ -125,7 +125,9 @@ class Main(object):
                                   'keystone-service-type': default_ks_service_type,
                                   'keystone-endpoint-type': default_ks_endpoint_type,
                                   'rackspace-service-net' : 'no',
-                                 })
+                                  'user-list' : default_user_list,
+                                  'ftp-auth-mode' : default_ftp_auth_mode
+        })
 
         if not config.read(config_file) and alt_config_file:
             # the default conf file is optional
@@ -256,6 +258,19 @@ class Main(object):
                           default=default_config_file,
                           help="Use an alternative configuration file (default: %s)" % default_config_file)
 
+        parser.add_option('--user-list',
+                          type="str",
+                          dest="user_list_file",
+                          default=self.config.get('ftpcloudfs', 'user-list'),
+                          help="(default: %s)" % default_user_list)
+
+        parser.add_option('--ftp-auth-mode',
+                          type="str",
+                          dest="ftp_auth_mode",
+                          default=self.config.get('ftpcloudfs', 'ftp-auth-mode'),
+                          help="direct, userlist, userlist+direct(default: %s)" % default_ftp_auth_mode)
+
+
         (options, _) = parser.parse_args()
 
         if options.keystone:
@@ -271,12 +286,22 @@ class Main(object):
 
         self.options = options
 
+        try:
+            with open(self.options.user_list_file,"r") as istream:
+                self.user_list=yaml.load(istream)
+        except Exception:
+            pass
+
+
+
     def setup_server(self):
         """Run the main ftp server loop."""
         banner = self.config.get('ftpcloudfs', 'banner').replace('%v', version)
         banner = banner.replace('%f', pyftpdlib.__ver__)
 
         MyFTPHandler.banner = banner
+        ObjectStorageFtpFS.user_list = self.user_list
+        ObjectStorageFtpFS.auth_mode = self.options.ftp_auth_mode
         ObjectStorageFtpFS.authurl = self.options.authurl
         ObjectStorageFtpFS.insecure = self.options.insecure
         ObjectStorageFtpFS.keystone = self.options.keystone

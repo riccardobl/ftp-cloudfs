@@ -2,6 +2,9 @@ version = '0.33'
 
 default_banner = "ftp-cloudfs %v using pyftpdlib %f ready."
 default_config_file = '/etc/ftpcloudfs.conf'
+default_user_list = '/etc/ftpcloudfs.users'
+default_ftp_auth_mode = 'userlist+direct'
+
 default_address = '127.0.0.1'
 default_port = 2021
 

@@ -88,4 +88,10 @@
 # Use Rackspace's ServiceNet internal network.
 # rackspace-service-net = no
 
+
+user-list = /etc/ftpcloudfs.users
+
+# userlist | direct | userlist+direct     userlist+direct
+ftp-auth-mode = userlist+direct
+
 # EOF
